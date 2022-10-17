@@ -1,14 +1,14 @@
 # Gamedev Studies
 
-##The Goal:
+## The Goal:
  - Study gameplay, 
  - familiarize with new frameworks/languages/ways of doing things
 
-##The Plan: 
+## The Plan: 
 
 Write mostly classic games with varying degrees of ambition:
 
-The Games:
+## The Games:
  - Worm
  - Asteroids
  - Tetris
@@ -26,12 +26,12 @@ The Games:
    - Sierra/Lucasarts style
 
 
- The stuff:
+## The stuff:
  - Python, OpenGL? SDL?
  - Javascript
  - Löve2d
 
- The Other Stuff
+## The Other Stuff
  - Networking? 
  - Rust
  - Go
