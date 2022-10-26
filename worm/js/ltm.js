@@ -9,34 +9,23 @@
     const max_y = 21
     const square_width=16
     const margin=4
-    let high_score = 0
-    let cur_score = 0
-
+    
     function drawSquares(ctx) {
-        ctx.fillStyle="#00F"
         for (let i=0;i<max_x;i++) {
             for (let j=0;j<max_y;j++){
-                ctx.fillStyle="rgba("+i*10+", "+j*10+", 255, 255)"
-                let x=margin+(square_width+margin)*i
-                let y=margin+(square_width+margin)*j
-                
-                ctx.fillRect(
-                    x,y,
-                    square_width,
-                    square_width) 
+                const color="rgba("+i*10+", "+j*10+", 255, 255)"
+                drawSquare(ctx, i, j, color)
             }
-
         }
     }
 
-    function drawSquare(ctx, x,y,color) {
+    function drawSquare(ctx, x, y, color) {
         ctx.fillStyle = color
         ctx.fillRect(
             margin+(square_width+margin)*x,
             margin+(square_width+margin)*y,
             square_width,square_width
         )
-
     }
 
     function drawPill(ctx,pill) {
@@ -50,17 +39,14 @@
 
     function drawWorm(ctx, worm){
         const wormColor = "#FF0"
-        for (const pos of worm){
-            drawSquare(ctx, pos.x, pos.y, wormColor)
-        }
+        worm.map(pos=>drawSquare(ctx, pos.x, pos.y, wormColor))                
     }
 
-    function drawHighScore(ctx){
+    function drawScores(ctx, cur_score, high_score){
         const fontsize=18
         const x = (square_width+margin)*max_x
-        ctx.fillStyle = "#000"        
-        
-        ctx.fillRect(x+margin, 8, 10*fontsize, 3*fontsize) // FIXME: Y yellow?
+        ctx.fillStyle = "#000"                
+        ctx.fillRect(x+margin, 8, 10*fontsize, 3*fontsize)
         ctx.fillStyle = "#0f0"
         ctx.font = "bold "+fontsize+"px Courier New"    
         ctx.fillText("High Score:"+high_score, x+4,8+fontsize)
@@ -71,24 +57,19 @@
     function updateWorm(worm, cur_dir, hungry){
             const x = worm[0].x+cur_dir.x
             const y = worm[0].y+cur_dir.y
-            //check for self collision
-            if (worm.length > 1 && worm.some(v=>{                
-                return coordsMatch(v, {x:x,y:y})                
-            })) {       
+            
+            if (
+                worm.length > 1 && worm.some(v=>coordsMatch(v, {x:x,y:y})) || //check for self collision
+                !(x*(x-20) <=0 && y*(y-20) <=0) //check for border collision
+                ) {       
                 return false
-            }
-            //check for border collision
-            if (x*(x-20) <=0 && y*(y-20) <=0) {
-               worm.unshift({x:x,y:y})
-            } else {
-                return false
-            }
+            }                        
+            worm.unshift({x:x,y:y})
+            
             if(hungry) {
                 worm.pop()
-            } else {
-                hungry = true
             }
-
+            hungry = true            
             return true 
     }
 
@@ -97,11 +78,14 @@
     }
 
     function startUpdateLoop(ctx) {
+        const fps = 10
         let pill_pos = getRandomPos()
         let worm = [{x:10,y:10}]
         let cur_dir = {x:0, y:0}
         let hungry = true
         let alive = true
+        let cur_score = 0
+        let high_score = 0
         let input = document.addEventListener("keydown", (key)=>{
             const updates = {
                 "w": {x:0, y:-1},
@@ -126,19 +110,16 @@
             alive = updateWorm(worm, cur_dir, hungry)
             if (alive){
                 cur_score = worm.length
-                if (worm.length > high_score){
-                    high_score = worm.length
-                }
+                high_score = (cur_score > high_score) ? cur_score: high_score                
             }
-            else{
+            else {
+                //dead, reset game
                 worm = [{x:10,y:10}]                
                 cur_dir={x:0, y:0}
             }
-            drawHighScore(ctx)
-            drawWorm(ctx, worm)
-            
-
-        }, 100)
+            drawScores(ctx, cur_score, high_score)
+            drawWorm(ctx, worm)            
+        }, 1000/fps)
     }
 
     window.onload = ()=>{
@@ -149,16 +130,10 @@
             "id": "screen"
         })
 
-
         document.querySelector("#main").append(mycanvas)
         const ctx = mycanvas.getContext('2d')
         ctx.fillStyle="#000"
-        //ctx.clearRect(0,0, mycanvas.width, mycanvas.height)
         ctx.fillRect(0,0,mycanvas.width, mycanvas.height)
-
-        drawSquares(ctx)
-
-        //drawPill(ctx, {x:0, y:0})
         startUpdateLoop(ctx)
     }
 })()
