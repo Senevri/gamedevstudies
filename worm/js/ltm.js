@@ -5,10 +5,12 @@
             element.setAttribute(attr, attrs[attr])
         }
     }
-        const max_x = 21
-        const max_y = 21
-        const square_width=10
-        const margin=4
+    const max_x = 21
+    const max_y = 21
+    const square_width=10
+    const margin=4
+    let high_score = 0
+    let cur_score = 0
 
     function drawSquares(ctx) {
         ctx.fillStyle="#00F"
@@ -53,6 +55,18 @@
         }
     }
 
+    function drawHighScore(ctx){
+        const fontsize=16
+        const x = (square_width+margin)*max_x
+        ctx.fillstyle = "#000000"        
+        ctx.fillRect(x+4, 8, 10*fontsize, 3*fontsize) // FIXME: Y yellow?
+        ctx.fillStyle = "#0000ff"
+        ctx.font = fontsize+"px Courier New"
+        ctx.fillText("High Score:"+high_score, x+4,8+fontsize)
+        ctx.fillText("Score:"+cur_score, x +4,  2*(8+fontsize))
+    }
+
+    
     function updateWorm(worm, cur_dir, hungry){
             const x = worm[0].x+cur_dir.x
             const y = worm[0].y+cur_dir.y
@@ -110,15 +124,27 @@
             drawPill(ctx, pill_pos)
             
             alive = updateWorm(worm, cur_dir, hungry)
+            if (alive){
+                cur_score = worm.length
+                if (worm.length > high_score){
+                    high_score = worm.length
+                }
+            }
+            else{
+                worm = [{x:10,y:10}]                
+                cur_dir={x:0, y:0}
+            }
             drawWorm(ctx, worm)
+            drawHighScore(ctx)
+
         }, 100)
     }
 
     window.onload = ()=>{
         let mycanvas = document.createElement("canvas")
         setattributes(mycanvas, {
-            "width": "900",
-            "height": "900",
+            "width": "500",
+            "height": "500",
             "id": "screen"
         })
 
