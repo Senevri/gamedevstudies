@@ -7,7 +7,7 @@
     }
     const max_x = 21
     const max_y = 21
-    const square_width=10
+    const square_width=16
     const margin=4
     let high_score = 0
     let cur_score = 0
@@ -56,12 +56,13 @@
     }
 
     function drawHighScore(ctx){
-        const fontsize=16
+        const fontsize=18
         const x = (square_width+margin)*max_x
-        ctx.fillstyle = "#000000"        
-        ctx.fillRect(x+4, 8, 10*fontsize, 3*fontsize) // FIXME: Y yellow?
-        ctx.fillStyle = "#0000ff"
-        ctx.font = fontsize+"px Courier New"
+        ctx.fillStyle = "#000"        
+        
+        ctx.fillRect(x+margin, 8, 10*fontsize, 3*fontsize) // FIXME: Y yellow?
+        ctx.fillStyle = "#0f0"
+        ctx.font = "bold "+fontsize+"px Courier New"    
         ctx.fillText("High Score:"+high_score, x+4,8+fontsize)
         ctx.fillText("Score:"+cur_score, x +4,  2*(8+fontsize))
     }
@@ -102,7 +103,6 @@
         let hungry = true
         let alive = true
         let input = document.addEventListener("keydown", (key)=>{
-            console.log(key)
             const updates = {
                 "w": {x:0, y:-1},
                 "a": {x:-1, y:0},
@@ -134,8 +134,9 @@
                 worm = [{x:10,y:10}]                
                 cur_dir={x:0, y:0}
             }
-            drawWorm(ctx, worm)
             drawHighScore(ctx)
+            drawWorm(ctx, worm)
+            
 
         }, 100)
     }
@@ -143,8 +144,8 @@
     window.onload = ()=>{
         let mycanvas = document.createElement("canvas")
         setattributes(mycanvas, {
-            "width": "500",
-            "height": "500",
+            "width": (square_width+margin)*(max_x+10),
+            "height": (square_width+margin)*(max_x+1),
             "id": "screen"
         })
 
