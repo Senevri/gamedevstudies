@@ -1,2 +1,2 @@
-from . import game, worm
-modules = [game, worm]
+from . import game, worm, log
+modules = [game, worm, log]

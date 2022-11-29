@@ -1,21 +1,17 @@
-import logging
-
 import time
 from datetime import datetime
 
 from .worm import PyGame, State
+from libs import log
 
-logging.basicConfig()
-logger = logging.getLogger("Game")
-logging.getLogger("Game").setLevel(logging.DEBUG)
-logger.warn = logger.warning
-
+logger = log.getLogger(__name__)
 
 class Game:
     mystr = ""
     times = 0
 
     def __init__(self, state = None):
+        logger.info(__name__)
         # this state is only initial, not used on reload
         self.state = State(
             window_caption="Pygame Window "
@@ -35,6 +31,7 @@ class Game:
         time.sleep(1)
         self.pygame.state.times += 1
 
+        #self.pygame.state.window_caption = "Pygame Window "
         return self.pygame.state
 
 

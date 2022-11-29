@@ -1,25 +1,25 @@
 import importlib
 import glob
 import os
-import logging
+
 import time
 import traceback
 from typing import Optional
 
 import libs
-from libs import game
+from libs import game, log
+from pprint import pprint, pformat
 
-logging.basicConfig()
-logger = logging.getLogger("Main")
-logging.getLogger("Main").setLevel(logging.DEBUG)
-logger.warn = logger.warning
+logger = log.getLogger("Main")
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 file_mtimes = {}
 
 def mainloop():
-    file_mtimes =get_file_mtimes()
+    global file_mtimes
+    file_mtimes = get_file_mtimes()
+    logger.warn(pformat(file_mtimes))
     game_obj = game.Game()
     state = None
     while True:
@@ -48,6 +48,7 @@ def get_file_mtimes():
     return mtimes
 
 def reload_changed_libs() -> Optional[game.Game]:
+    global file_mtimes
     # check if any files changed
     files = glob.glob(f"{dir_path}./libs/*.py")
     #files.append(__file__)
@@ -58,10 +59,11 @@ def reload_changed_libs() -> Optional[game.Game]:
         cur_mtime = file_mtimes.get(file, 0)
         if new_mtime != cur_mtime:
             logger.info(f"reload_changed_libs: {file}")
-            file_mtimes[file] = new_mtime
+            #file_mtimes[file] = new_mtime
             reload = True
 
     if reload:
+        file_mtimes = new_mtimes
         importlib.reload(libs)
         for module in libs.modules:
             importlib.reload(module)
@@ -70,4 +72,5 @@ def reload_changed_libs() -> Optional[game.Game]:
     # threading.Timer(5.0, reload_changed_libs, ).start()
 
 if __name__ == "__main__":
+    print(__file__)
     mainloop()

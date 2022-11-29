@@ -1,15 +1,11 @@
-import logging
 from dataclasses import dataclass
-
 
 import pygame
 from pygame.locals import *
 
+from libs import log
 
-logging.basicConfig()
-logger = logging.getLogger("Worm")
-logging.getLogger("Worm").setLevel(logging.DEBUG)
-logger.warn = logger.warning
+logger = log.getLogger(__name__)
 
 
 @dataclass
@@ -20,6 +16,7 @@ class State():
 
 class PyGame:
     def __init__(self, state: State):
+        logger.info(__name__)
         self.state = state
         self._running = True
         self._display_surf = None
@@ -33,7 +30,7 @@ class PyGame:
         pygame.display.set_caption(self.state.window_caption + str(self.state.times))
 
     def on_event(self, event):
-        logger.info(f"Event! {event}")
+        #logger.info(f"Event! {event}")
         if event.type == pygame.QUIT:
             self._running = False
 
@@ -57,4 +54,5 @@ class PyGame:
                 self.on_event(event)
             self.on_loop()
             self.on_render()
+            #Reload libs here
         self.on_cleanup()
