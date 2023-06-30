@@ -40,3 +40,5 @@ class Game:
         #print(self.mystr + str(self.times))
         self.times += 1
 
+
+
