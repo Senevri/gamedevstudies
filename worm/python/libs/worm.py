@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 
 import pygame
-from pygame.locals import *
+from pygame import Surface
+# from pygame.locals import (
 
-from libs import log
+# )
+
+try:
+    from libs import log
+except ImportError:
+    from . import log
 
 logger = log.getLogger(__name__)
 
@@ -15,11 +21,13 @@ class State():
     quit_game: bool = False
 
 class PyGame:
+    _display_surf: Surface
+
     def __init__(self, state: State):
         logger.info(__name__)
         self.state = state
         self._running = True
-        self._display_surf = None
+
         self.size = self.weight, self.height = 800, 800
 
 
@@ -39,8 +47,8 @@ class PyGame:
         pass
 
     def on_render(self):
-        #logger.info(f"Render!")
-        pass
+        self._display_surf.fill((0,0,0))
+        pygame.draw.rect(self._display_surf, pygame.Color(255,0,0), pygame.Rect(100,100, 24,24))
 
     def on_cleanup(self):
         pygame.quit()
@@ -50,6 +58,7 @@ class PyGame:
             self._running = False
 
         while( self._running ):
+            #logger.info("running")
             for event in pygame.event.get():
                 self.on_event(event)
             self.on_loop()

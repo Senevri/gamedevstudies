@@ -21,7 +21,8 @@ def mainloop():
     file_mtimes = get_file_mtimes()
     logger.warn(pformat(file_mtimes))
     game_obj = game.Game()
-    state = None
+    state: game.State = game_obj.run(None)
+
     while True:
         try:
             state = game_obj.run(state)
