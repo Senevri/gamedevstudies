@@ -1,6 +1,11 @@
 import tkinter as tk
 from dataclasses import dataclass
+import logging
 
+
+logger = logging.getLogger(__name__)
+logger.warn = logger.warning
+logger.setLevel(logging.DEBUG)
 
 class GobanException(Exception):
     pass
@@ -23,12 +28,15 @@ class GoBoard:
         self.previous_moves = []
         self.captures = {"white": 0, "black": 0}
 
+    def switch_current_player(self):
+        self.current_player = 'white' if self.current_player == 'black' else 'black'
+
     def make_move(self, row, col):
         if self.board[row][col] is None:
             move = Move(row, col, self.current_player, self.current_player, True)
             self.previous_moves.append(move)
             self.board[row][col] = self.current_player
-            self.current_player = 'white' if self.current_player == 'black' else 'black'
+            self.switch_current_player()
         elif (row, col) in [(move.row, move.col) for move in self.previous_moves]:
             prev_move = None
             for prev_move in self.previous_moves:
@@ -45,20 +53,21 @@ class GoBoard:
             self.captures[self.current_player] += 1
 
     def undo_move(self):
-        if self.previous_moves:
-            move = self.previous_moves.pop()
-            row, col = move.row, move.col
-            player = move.player
-            addition = move.addition
+        if not self.previous_moves:
+            return
+        move = self.previous_moves.pop()
+        row, col = move.row, move.col
+        player = move.player
+        addition = move.addition
 
-            if addition:
-                self.board[row][col] = None
-                self.captures[player] -= 1
-            elif self.board[row][col] is None:
-                self.board[row][col] = move.color
-                self.captures[player] += 1
-
-            self.current_player = 'white' if move.player == 'black' else 'black'
+        if addition:
+            self.board[row][col] = None
+            self.captures[player] -= 1
+        elif self.board[row][col] is None:
+            self.board[row][col] = move.color
+            self.captures[player] += 1
+        self.captures[player] = max(self.captures[player], 0)
+        self.switch_current_player()
 
 
 class GoBoardUI:
@@ -69,18 +78,34 @@ class GoBoardUI:
         self.cell_size = (self.board_size - self.margin) // self.size
 
         self.window = tk.Tk()
+        frame = tk.Frame(self.window)
+
         self.canvas = tk.Canvas(self.window, width=self.board_size + self.margin, height=self.board_size + self.margin * 2)
+        #self.canvas.grid(row=0, column=0)
         self.canvas.pack()
         self.canvas.bind('<Button-1>', self.handle_click)
 
-        self.undo_button = tk.Button(self.window, text='Undo', command=self.undo_move)
-        self.undo_button.pack()
 
-        self.status_label = tk.Label(self.window, text='Black: 0 | White: 0', width=20)
-        self.status_label.pack()
+
+        self.undo_button = tk.Button(frame, text='Undo', command=self.undo_move)
+        self.status_label = tk.Label(frame, text='Black: 0 | White: 0', width=20)
 
         self.go_board = GoBoard(size)
+        self.player_button = tk.Button(frame, text=self.go_board.current_player, command=self.switch_player)
+        self.player_label = tk.Label(frame, text="Turn:")
+
+        self.undo_button.grid(row=1, column=2)
+        self.player_label.grid(row=1, column=0)
+        self.player_button.grid(row=1, column=1)
+        self.status_label.grid(row=2, column=1)
+        frame.pack()
+
+
         self.draw_board_ui()
+
+    def switch_player(self):
+        self.go_board.switch_current_player()
+        self.player_button.configure(text=self.go_board.current_player)
 
     def draw_border(self):
         border_line_width = 2  # Width of the border lines
@@ -125,15 +150,16 @@ class GoBoardUI:
                 elif stone == 'white':
                     self.canvas.create_oval(x1, y1, x2, y2, fill='white', outline='black')
 
-    def draw_ui(self):
+    def update_ui_data(self):
         self.status_label.config(text=f'Black: {self.go_board.captures["white"]} | White: {self.go_board.captures["black"]}')
+        self.player_button.configure(text=self.go_board.current_player)
 
     def draw_board_ui(self):
         self.canvas.delete('all')
         self.draw_lines()
         self.draw_markings()
         self.draw_board()
-        self.draw_ui()
+        self.update_ui_data()
 
     def handle_click(self, event):
         row = (event.y - int(self.margin * 1.5)) // self.cell_size
