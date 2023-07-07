@@ -1,4 +1,5 @@
 import tkinter as tk
+from PIL import Image, ImageTk, ImageDraw
 from dataclasses import dataclass
 import logging
 
@@ -27,6 +28,7 @@ class GoBoard:
         self.current_player = 'black'
         self.previous_moves = []
         self.captures = {"white": 0, "black": 0}
+
 
     def switch_current_player(self):
         self.current_player = 'white' if self.current_player == 'black' else 'black'
@@ -73,9 +75,10 @@ class GoBoard:
 class GoBoardUI:
     def __init__(self, size):
         self.size = size
-        self.margin = 30
-        self.board_size = 570
-        self.cell_size = (self.board_size - self.margin) // self.size
+        self.margin = 45 #30
+        self.board_size = 855#570
+        self.stone_margin = 2
+        self.cell_size = (self.board_size) // self.size
 
         self.window = tk.Tk()
         frame = tk.Frame(self.window)
@@ -100,8 +103,14 @@ class GoBoardUI:
         self.status_label.grid(row=2, column=1)
         frame.pack()
 
-
+        self.window.bind("<KeyPress-z>", self.undo_key)
         self.draw_board_ui()
+
+        self.stone_images = []
+
+    def undo_key(self, event):
+        if event.keysym == 'z':
+            self.undo_move()
 
     def switch_player(self):
         self.go_board.switch_current_player()
@@ -110,10 +119,15 @@ class GoBoardUI:
     def draw_border(self):
         border_line_width = 2  # Width of the border lines
 
-        self.canvas.create_line(self.margin, self.margin, self.board_size + self.margin, self.margin, width=border_line_width)
-        self.canvas.create_line(self.margin, self.board_size + self.margin, self.board_size + self.margin, self.board_size + self.margin, width=border_line_width)
+        right_edge = bottom_edge = self.board_size + self.margin
+        #top
+        self.canvas.create_line(self.margin, self.margin, right_edge, self.margin, width=border_line_width)
+        #bottom
+        self.canvas.create_line(self.margin, bottom_edge, right_edge, bottom_edge, width=border_line_width)
+        #left
         self.canvas.create_line(self.margin, self.margin, self.margin, self.board_size + self.margin, width=border_line_width)
-        self.canvas.create_line(self.board_size + self.margin, self.margin, self.board_size + self.margin, self.board_size + self.margin, width=border_line_width)
+        #right
+        self.canvas.create_line(right_edge, self.margin, right_edge, bottom_edge, width=border_line_width)
 
     def draw_lines(self):
         self.draw_border()
@@ -138,17 +152,50 @@ class GoBoardUI:
             y = 10 + self.margin + self.size * cell_size + 5
             self.canvas.create_text(x, y, text=chr(65 + i))
 
+    def draw_stone(self, row, col, color):
+        margin = self.stone_margin
+        x1, y1 = self.margin // 2 + col * self.cell_size + self.margin, self.margin // 2 + row * self.cell_size + self.margin
+        x2, y2 = self.margin // 2 + (col + 1) * self.cell_size + self.margin, self.margin // 2 + (row + 1) * self.cell_size + self.margin
+        outline_width=1
+        outline_color = "black"
+
+        canvas = self.canvas
+        # Create an image with RGBA mode
+        image = Image.new("RGBA", (x2 - x1, y2 - y1))
+
+        # Create a draw object
+        draw = ImageDraw.Draw(image)
+
+        # # Draw an anti-aliased oval on the image
+        draw.ellipse(
+            [(0, 0), (x2 - x1-margin, y2 - y1-margin)],
+            fill=color, outline=outline_color, width=outline_width
+            )
+
+        # # Draw a slightly larger filled oval
+        # draw.ellipse([(0, 0), (x2 - x1-margin + outline_width, y2 - y1-margin + outline_width)], fill=outline_color)
+
+        # # Draw a slightly smaller filled oval in the center
+        # draw.ellipse([(outline_width // 2 + margin // 2, outline_width // 2 + margin // 2),
+        #               (x2 - x1 - outline_width-margin // 2, y2 - y1 - outline_width-margin // 2)
+        #              ], fill=color)
+
+
+        # Convert the image to Tkinter-compatible format
+        photo_image = ImageTk.PhotoImage(image)
+
+        self.stone_images.append(photo_image)
+        # Display the image on the canvas
+        canvas.create_image(x1+margin, y1+margin, image=photo_image, anchor=tk.NW)
+
     def draw_board(self):
+        self.stone_images = []
         for row in range(self.size):
             for col in range(self.size):
-                x1, y1 = self.margin // 2 + col * self.cell_size + self.margin, self.margin // 2 + row * self.cell_size + self.margin
-                x2, y2 = self.margin // 2 + (col + 1) * self.cell_size + self.margin, self.margin // 2 + (row + 1) * self.cell_size + self.margin
 
-                stone = self.go_board.board[row][col]
-                if stone == 'black':
-                    self.canvas.create_oval(x1, y1, x2, y2, fill='black')
-                elif stone == 'white':
-                    self.canvas.create_oval(x1, y1, x2, y2, fill='white', outline='black')
+                if stone := self.go_board.board[row][col]:
+                    #self.canvas.create_oval(x1+margin, y1+margin, x2-margin, y2-margin, fill=stone, outline='black')
+                    self.draw_stone(row, col, color=stone)
 
     def update_ui_data(self):
         self.status_label.config(text=f'Black: {self.go_board.captures["white"]} | White: {self.go_board.captures["black"]}')
@@ -165,7 +212,7 @@ class GoBoardUI:
         row = (event.y - int(self.margin * 1.5)) // self.cell_size
         col = (event.x - int(self.margin * 1.5)) // self.cell_size
 
-        if 0 <= row < self.size and 0 <= col < self.size:
+        if 0 <= row < self.size-1 and 0 <= col < self.size-1:
             self.go_board.make_move(row, col)
             self.draw_board_ui()
 
