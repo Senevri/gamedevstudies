@@ -112,7 +112,10 @@
 
             hungry = !coordsMatch(pill_pos, worm[0])
             if (!hungry) {
-                pill_pos = getRandomPos()
+                while (worm.some(p=>p.x == pill_pos.x && p.y == pill_pos.y)) {
+                    pill_pos = getRandomPos()
+                }
+
             }
             drawPill(ctx, pill_pos)
 
