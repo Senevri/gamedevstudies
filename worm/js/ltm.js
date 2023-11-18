@@ -77,6 +77,10 @@
         return (c1.x == c2.x && c1.y == c2.y)
     }
 
+    function isCompleteReversal(currentDirection, newDirection) {
+        return currentDirection.x + newDirection.x === 0 && currentDirection.y + newDirection.y === 0;
+    }
+
     function startUpdateLoop(ctx) {
         const fps = 10
         let pill_pos = getRandomPos()
@@ -94,6 +98,11 @@
                 "d": { x: 1, y: 0 },
             }
             if (key.key in updates) {
+                // prevent self-collision in reverse
+                if ((cur_score > 0) && isCompleteReversal(updates[key.key], cur_dir)) {
+                    return
+                }
+
                 cur_dir = updates[key.key]
             }
         })
@@ -137,5 +146,3 @@
         startUpdateLoop(ctx)
     }
 })()
-
-
