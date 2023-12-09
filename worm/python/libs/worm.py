@@ -107,6 +107,6 @@ class PyGame:
 
     def update(self):
         self.on_execute()
-        logger.warn(self.state.worm)
+        logger.info(f"Worm: {self.state.worm}")
         # logger.warn(self.curloop)
         return self.is_running()

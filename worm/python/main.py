@@ -12,25 +12,25 @@ logger = libs.log.getLogger(__name__)
 
 modification_times = {}
 
+
 def check_for_updates(folder):
     # Get a list of all .py files in the specified folder
-    files = glob.glob(f'{folder}/*.py')
+    files = glob.glob(f"{folder}/*.py")
 
     # Check if any of the files have been modified
     for file in files:
         if modification_times.get(file) != os.path.getmtime(file):
             # Reload the module
-            module_name = file.split('/')[-1][:-3]
-            full_module_name = folder.replace('/', '.') + '.' + module_name
-            logger.warn((file, module_name, full_module_name))
-            imported_module = importlib.import_module('libs')
+            module_name = file.split("/")[-1][:-3]
+            full_module_name = folder.replace("/", ".") + "." + module_name
+            logger.info((file, module_name, full_module_name))
+            imported_module = importlib.import_module("libs")
             libs = importlib.reload(imported_module)
 
             # Get a list of all the modules in the libs package
             module_list = [m[1] for m in inspect.getmembers(libs, inspect.ismodule)]
             logger.info(pformat(module_list))
             for module in module_list:
-
                 importlib.reload(module)
 
             # Update the modification time
@@ -39,7 +39,8 @@ def check_for_updates(folder):
             # Return the reloaded module
             return imported_module
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Run the game loop
     running = True
     libs = check_for_updates("libs")
@@ -58,7 +59,7 @@ if __name__ == '__main__':
                 logger.info("Reloaded!")
             # Use the updated my_object object
             running = my_object.update()
-            my_object.state.window_caption="asdf"
+            my_object.state.window_caption = "asdf"
             state = my_object.state
 
         except Exception as ex:
