@@ -1,1 +1,1 @@
-arcade
+-e ./ext/arcade

@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
-class Reloader():
+class Reloader:
     file_mtimes = {}
 
     constructor = None
 
-    def mainloop(self,constructor):
+    def mainloop(self, constructor):
         self.file_mtimes = self.get_file_mtimes()
         logger.warn(pformat(file_mtimes))
         reload_obj = constructor()
@@ -34,7 +34,7 @@ class Reloader():
                 print(ex)
                 print(traceback.format_exc())
                 time.sleep(5)
-            print ("loop")
+            print("loop")
             if new_obj := self.reload_changed_libs():
                 logger.warn("Mainloop: changed library")
                 reload_obj = new_obj
@@ -42,8 +42,7 @@ class Reloader():
 
             if state.quit:
                 break
-            #time.sleep(0.1)
-
+            # time.sleep(0.1)
 
     def get_file_mtimes(self):
         # check if any files changed
@@ -55,7 +54,7 @@ class Reloader():
             mtimes[file] = cur_mtime
         return mtimes
 
-    def reload_changed_libs(self) -> Optional[class]:
+    def reload_changed_libs(self):
         # check if any files changed
         reload = False
         new_mtimes = self.get_file_mtimes()
@@ -64,7 +63,7 @@ class Reloader():
             cur_mtime = self.file_mtimes.get(file, 0)
             if new_mtime != cur_mtime:
                 logger.info(f"reload_changed_libs: {file}")
-                #file_mtimes[file] = new_mtime
+                # file_mtimes[file] = new_mtime
                 reload = True
 
         if reload:
@@ -76,8 +75,10 @@ class Reloader():
 
         # threading.Timer(5.0, reload_changed_libs, ).start()
 
+
 if __name__ == "__main__":
     from libs import game, log
+
     print(__file__)
     reload = Reloader(game.Game)
     reload.mainloop()
