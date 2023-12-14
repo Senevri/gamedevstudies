@@ -1,5 +1,4 @@
 import tkinter as tk
-from PIL import Image, ImageTk, ImageDraw
 from dataclasses import dataclass
 import logging
 
@@ -7,6 +6,14 @@ import logging
 logger = logging.getLogger(__name__)
 logger.warn = logger.warning
 logger.setLevel(logging.DEBUG)
+
+try: #Use PIL if available for antialiasing
+    from PIL import Image, ImageTk, ImageDraw
+    has_pil = True
+except ImportError as e:
+    logger.error(f"No PIL! {e}")
+    has_pil = False
+
 
 class GobanException(Exception):
     pass
@@ -159,6 +166,10 @@ class GoBoardUI:
         outline_width=1
         outline_color = "black"
 
+        if not has_pil:
+            self.canvas.create_oval(x1+margin, y1+margin, x2-margin, y2-margin, fill=color, outline='black')
+            return
+
         canvas = self.canvas
         # Create an image with RGBA mode
         image = Image.new("RGBA", (x2 - x1, y2 - y1))
@@ -171,15 +182,6 @@ class GoBoardUI:
             [(0, 0), (x2 - x1-margin, y2 - y1-margin)],
             fill=color, outline=outline_color, width=outline_width
             )
-
-        # # Draw a slightly larger filled oval
-        # draw.ellipse([(0, 0), (x2 - x1-margin + outline_width, y2 - y1-margin + outline_width)], fill=outline_color)
-
-        # # Draw a slightly smaller filled oval in the center
-        # draw.ellipse([(outline_width // 2 + margin // 2, outline_width // 2 + margin // 2),
-        #               (x2 - x1 - outline_width-margin // 2, y2 - y1 - outline_width-margin // 2)
-        #              ], fill=color)
-
 
         # Convert the image to Tkinter-compatible format
         photo_image = ImageTk.PhotoImage(image)
@@ -194,7 +196,6 @@ class GoBoardUI:
             for col in range(self.size):
 
                 if stone := self.go_board.board[row][col]:
-                    #self.canvas.create_oval(x1+margin, y1+margin, x2-margin, y2-margin, fill=stone, outline='black')
                     self.draw_stone(row, col, color=stone)
 
     def update_ui_data(self):
