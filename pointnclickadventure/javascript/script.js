@@ -25,8 +25,13 @@ function updateCanvas() {
 
     // Clear the canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
+    drawDebugContent(context, scale)
+    drawImage(context, scale)
 
-// Draw a box with corner markers
+}
+
+function drawDebugContent(context, scale) {
+    // Draw a box with corner markers
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.fillStyle = 'rgba(255, 0, 0, 0.3)';
     context.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
@@ -47,7 +52,21 @@ function updateCanvas() {
     context.fillRect(centerX, centerY, pixelSize, pixelSize);
     context.font = "16px Cascadia Code"
     context.fillText(scale, 100,100)
+}
 
+// Function to load and draw an image
+function drawImage(context) {
+    const image = new Image();
+    image.src = './adventurer.png'; // Replace with the path to your image
+    image.onload = function () {
+        const scale = canvas.width / fixedWidth;
+        const imageWidth = image.width * scale;
+        const imageHeight = image.height * scale;
+        const imageX = Math.floor(canvas.width / 2 - imageWidth / 2);
+        const imageY = Math.floor(canvas.height / 2 - imageHeight / 2);
+        context.imageSmoothingEnabled=false
+        context.drawImage(image, imageX, imageY, imageWidth, imageHeight);
+    };
 }
 
 // Call the function initially and whenever the window is resized
