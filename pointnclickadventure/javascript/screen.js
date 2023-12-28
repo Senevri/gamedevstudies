@@ -27,7 +27,7 @@ function updateCanvas() {
 
     // Clear the canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
-    drawDebugContent(context, scale)
+    //drawDebugContent(context, scale)
     //drawTestTiles(context, scale)
     // const x=100
     // const y=100
@@ -60,28 +60,47 @@ function drawDebugContent(context, scale) {
     context.font = "16px Cascadia Code"
     context.fillStyle = 'black'; // Set color to black
     context.fillText(scale, 20,20)
+ //   drawImage(context, scale, "./adventurer.png", 0, 0)
 }
 
-function drawTestTiles(context, scale){
-    for (let i=0;i<20;i++) {
-        for (let j=0;j<15;j++) {
-            drawImage(context, scale, "./test_tile.png", i*16, j*16)
+function getTestTileCanvas(){
+    let tmp_canvas = document.createElement('canvas')
+    tmp_canvas.width = fixedWidth; tmp_canvas.height = fixedHeight
+    const ctx = tmp_canvas.getContext('2d')
+    const tile_img = new Image()
+    tile_img.src= "./test_tile.png"
+    tile_img.imageSmoothingEnabled=false
+    tile_img.onload = ()=> {
+        for (let i=0;i<20;i++) {
+            let x = i*16
+            for (let j=0;j<15;j++) {
+                ctx.drawImage(tile_img, x, j*16)
+            }
         }
     }
+    return tmp_canvas
+}
+function drawScaledImage(context, image, x, y, scale) {
+    const imageWidth = image.width * scale;
+    const imageHeight = image.height * scale;
+    const imageX = x*scale
+    const imageY = y*scale
+    context.imageSmoothingEnabled=false
+    context.drawImage(image, imageX, imageY, imageWidth, imageHeight);
 }
 
 // Function to load and draw an image
 function drawImage(context, scale, src, x, y) {
-    const image = new Image();
-    image.src = src; // Replace with the path to your image
-    image.onload = function () {
-        const imageWidth = image.width * scale;
-        const imageHeight = image.height * scale;
-        const imageX = x*scale
-        const imageY = y*scale
-        context.imageSmoothingEnabled=false
-        context.drawImage(image, imageX, imageY, imageWidth, imageHeight);
-    };
+    let image = new Image()
+    if (src instanceof Element) {
+        image = src
+        drawScaledImage(context, image, x, y, scale)
+    } else {
+        image.src = src
+        image.onload = function () {
+            drawScaledImage(context, image, x, y, scale)
+        };
+    }
 }
 
 export class SpriteSheet {
@@ -121,4 +140,4 @@ export class SpriteSheet {
 }
 
 // Call the function initially and whenever the window is resized
-export {updateCanvas, drawImage}
+export {updateCanvas, drawImage, drawDebugContent, getTestTileCanvas}
