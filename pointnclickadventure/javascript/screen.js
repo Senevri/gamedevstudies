@@ -68,7 +68,7 @@ function getTestTileCanvas(){
     tmp_canvas.width = fixedWidth; tmp_canvas.height = fixedHeight
     const ctx = tmp_canvas.getContext('2d')
     const tile_img = new Image()
-    tile_img.src= "./test_tile.png"
+    tile_img.src= "./assets/test_tile.png"
     tile_img.imageSmoothingEnabled=false
     tile_img.onload = ()=> {
         for (let i=0;i<20;i++) {

@@ -2,8 +2,9 @@
 
 import{ updateCanvas, SpriteSheet, drawImage, getTestTileCanvas, drawDebugContent } from './screen.js'
 import { loadSpriteSheet } from './upload.js';
-import { loadImage } from './utils.js';
-import { Animation } from './animation.js';
+// import { loadImage } from './utils.js';
+// import { Animation } from './animation.js';
+import { getResource } from './resources.js';
 
 
 let spritesheets = []
@@ -15,7 +16,7 @@ async function initialize() {
     window.addEventListener('resize', handleResize);
 
     // Load sprite sheet
-    const spriteSheet = await loadSpriteSheet("./guybrush.png", 32, 48);
+    const spriteSheet = await loadSpriteSheet("guybrush.png", 32, 48);
     testtileimage = getTestTileCanvas()
     spritesheets.push(spriteSheet)
     animations.push(spriteSheet.createAnimation(0, 0, 5, 8))
@@ -38,7 +39,8 @@ function handleResize() {
 
 const maxFps=60
 let lastUpdateTimeStamp=0
-let adventurer = await loadImage("./adventurer.png")
+let adventurer = getResource("adventurer.png")
+console.log(adventurer)
 function draw() {
     const currentTimeStamp = performance.now()
     //Limit maxfps

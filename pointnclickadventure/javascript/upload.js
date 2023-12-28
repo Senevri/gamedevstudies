@@ -1,6 +1,7 @@
 // upload.js
-import { loadImage } from './utils.js';
+//import { loadImage } from './utils.js';
 import { SpriteSheet } from './screen.js';
+import { getResource } from './resources.js'
 
 function handleFileUpload() {
     const fileInput = document.getElementById('fileInput');
@@ -20,7 +21,7 @@ function handleFileUpload() {
 
 async function loadSpriteSheet(img_src, width, height) {
     try {
-        const spriteSheetImage = await loadImage(img_src); // Replace with your sprite sheet path
+        const spriteSheetImage = getResource(img_src); // Replace with your sprite sheet path
         return new SpriteSheet(spriteSheetImage, width, height); // Adjust spriteWidth and spriteHeight as needed
     } catch (error) {
         console.error('Error loading sprite sheet:', error);
