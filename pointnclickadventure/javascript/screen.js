@@ -33,7 +33,7 @@ function updateCanvas() {
     // const y=100
     // drawImage(context, scale, './adventurer.png', x, y)
     // drawImage(context, scale, './guybrush.png', x, y)
-    context.scale=scale
+    context.current_scale=scale
     return {context, scale}
 }
 
@@ -131,10 +131,10 @@ export class SpriteSheet {
             spriteY * this.spriteHeight,
             this.spriteWidth,
             this.spriteHeight,
-            x*context.scale,
-            y*context.scale,
-            this.spriteWidth*context.scale*extra_scale,
-            this.spriteHeight*context.scale*extra_scale
+            x*context.current_scale,
+            y*context.current_scale,
+            this.spriteWidth*context.current_scale*extra_scale,
+            this.spriteHeight*context.current_scale*extra_scale
         );
     }
 }

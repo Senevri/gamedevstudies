@@ -56,6 +56,7 @@ function draw() {
     //drawDebugContent(context, scale)
     //drawImage(context, scale, image, 0, 0)
     animations.forEach((anim)=>anim.update())
+    animations[0].setFlip(false, false)
     animations[0].draw(context, 100, 100, 2)
     animations[1].draw(context, 200, 100, 2)
     // //spritesheets[0].drawSprite(context,1, 1, 200,100, scale )
