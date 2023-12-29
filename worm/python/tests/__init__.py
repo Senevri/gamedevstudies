@@ -15,5 +15,5 @@ def import_modules_from_directory(directory):
 
 
 # Example usage:
-directory_path = "."
+directory_path = os.path.basename(os.path.dirname(__file__))
 modules = import_modules_from_directory(directory_path)

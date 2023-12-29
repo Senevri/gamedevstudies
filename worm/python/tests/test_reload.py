@@ -64,6 +64,9 @@ if __name__ == "__main__":
     module_names = ["tests"]
     state = MockState()
     my_object = MockGame(None)
+    # initial file modification times
+    for name in module_names:
+        reloader.file_modification_times.update(reloader.get_file_mtimes(name))
 
     while running:
         try:

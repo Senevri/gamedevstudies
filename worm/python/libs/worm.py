@@ -3,7 +3,9 @@ from typing import Optional
 import pygame
 from pygame import Surface
 from pygame.event import Event
+import os, sys
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 try:
     from libs import log
 except ImportError:
@@ -112,9 +114,13 @@ class PyGame:
         return self.is_running()
 
     def run(self, state):
-        # Step function for external reloader
+        # Step function for external reloader.
+        # This could all also be IN the reloader
         if state:
             self.state = state
+            ws = WormState(*state.worm)
+            ws.color = (200, 255, 0)
+            self.state.worm = ws.tuple()
         if not self.update():
             self.state.quit_game = True
         return self.state

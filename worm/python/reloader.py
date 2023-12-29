@@ -21,7 +21,7 @@ file_modification_times = {}
 
 
 def get_file_mtimes(module_name="libs"):
-    files = glob.glob(f"{dir_path}/{module_name}/*.py")
+    files = glob.glob(os.path.join(dir_path, module_name, "*.py"))
     mtimes = {}
     for file in files:
         cur_mtime = os.stat(file).st_mtime
@@ -45,6 +45,12 @@ def check_for_updates(item) -> list:
     return reloaded_items
 
 
+def update_modification_time(file):
+    # Update the modification time
+    realpath = os.path.realpath(file)
+    file_modification_times[realpath] = os.path.getmtime(realpath)
+
+
 def check_for_folder_updates(folder):
     # Get a list of all .py files in the specified folder
     files_path = os.path.join(folder, "*.py")
@@ -56,33 +62,24 @@ def check_for_folder_updates(folder):
         if module_name == "__init__":
             continue
         module = reload_module_from_file(file, folder)
+        update_modification_time(file)
         if not module:
             continue
-        # Get a list of all the modules in the libs package
-        module_list = [m[1] for m in inspect.getmembers(module, inspect.ismodule) if m[1]]
-        # logger.info(pformat(module_list))
-        for submodule in module_list:
-            importlib.reload(submodule)
-
-        # Update the modification time
-        file_modification_times[file] = os.path.getmtime(file)
         reloaded_modules.append(module)
         # Return the reloaded module
     return reloaded_modules
 
 
 def reload_module_from_file(file, folder=None):
+    global file_modification_times
     if not folder:
         folder = dir_path
 
-    if file_modification_times.get(file) != os.path.getmtime(file):
+    realpath = os.path.realpath(file)
+    if file_modification_times.get(realpath) != os.path.getmtime(realpath):
         # Reload the module
         module_name = os.path.basename(file)[:-3]
-        # if module_name != "__init__":
-        full_module_name = folder.replace("/", ".") + "." + module_name
-        # logger.info((file, module_name, full_module_name))
-        imported_module = importlib.import_module(module_name)
-        return importlib.reload(imported_module)
+        reload_module(f"{folder}.{module_name}")
 
 
 def reload_changed_libs(module_str) -> Optional[object]:
@@ -101,12 +98,18 @@ def reload_changed_libs(module_str) -> Optional[object]:
 
     if reload:
         file_modification_times = new_mtimes
-        main_module: ModuleType = importlib.import_module(module_str)
-        importlib.reload(main_module)
-        for module in main_module.modules:
-            importlib.reload(module)
-        logger.info("Reloaded")
-        return main_module
+        return reload_module(module_str)
+
+
+def reload_module(module_str):
+    main_module: ModuleType = importlib.import_module(module_str)
+    importlib.reload(main_module)
+    module_list = [m[1] for m in inspect.getmembers(main_module, inspect.ismodule) if m[1]]
+    # logger.info(pformat(module_list))
+    for submodule in module_list:
+        importlib.reload(submodule)
+    logger.info(f"Reloaded {main_module.__name__}")
+    return main_module
     # threading.Timer(5.0, reload_changed_libs, ).start()
 
 
@@ -126,9 +129,10 @@ def example_main_loop():
             print(ex)
             print(traceback.format_exc())
             time.sleep(5)
-        if new_obj := reload_changed_libs(libs):
+        if new_lib := reload_changed_libs(libs.__name__):
             logger.warn("Mainloop: changed library")
-            game_obj = new_obj
+            game_obj.on_cleanup()
+            game_obj = new_lib.worm.PyGame(state)
         # logger.warn(game_obj.mystr)
 
         if state.quit_game:
