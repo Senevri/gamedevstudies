@@ -6,6 +6,8 @@ from pygame.locals import *
 
 class InputManager:
     def __init__(self):
+        self.actions = "up,down,left,right,fire,quit".split(",")
+
         self.key_mappings = {
             "up": K_UP,
             "down": K_DOWN,
@@ -46,15 +48,18 @@ class InputManager:
             return self.joystick.get_button(self.gamepad_mappings[button]) == 1
         return False
 
+    def get_gamepad_direction(self):
+        if self.joystick:
+            return [self.joystick.get_axis(i) for i in range(self.joystick.get_numaxes())]
+
     def is_mouse_wheel_up(self):
-        event = self.event
-        if not event:
-            return False
-        return (
-            event.type == MOUSEBUTTONDOWN
-            and event.button == 4
-            or (event.type == MOUSEWHEEL and event.y > 0)
-        )
+        if event := self.event:
+            return (
+                event.type == MOUSEBUTTONDOWN
+                and event.button == 4
+                or (event.type == MOUSEWHEEL and event.y > 0)
+            )
+        return False
 
     def is_mouse_wheel_down(self):
         if event := self.event:
@@ -63,8 +68,19 @@ class InputManager:
                 and event.button == 5
                 or (event.type == MOUSEWHEEL and event.y < 0)
             )
-        else:
-            return False
+        return False
+
+    def get_actions(self):
+        # sourcery skip: for-append-to-extend, inline-immediately-returned-variable, list-comprehension
+        current_actions = []
+        for action in self.actions:
+            if (
+                (action in self.key_mappings and self.is_key_pressed(action))
+                or (action in self.gamepad_mappings and self.is_gamepad_button_pressed(action))
+                or (action in self.mouse_mappings and self.is_mouse_button_pressed(action))
+            ):
+                current_actions.append(action)
+        return current_actions
 
 
 def main():
