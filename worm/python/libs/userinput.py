@@ -38,7 +38,10 @@ class InputManager:
             self.joystick.init()
 
     def is_key_pressed(self, key):
-        return pygame.key.get_pressed()[self.key_mappings[key]] == 1
+        # return pygame.key.get_pressed()[self.key_mappings[key]] == 1
+        # Below implementation doesn't deal with multikey
+        if event := self.event:
+            return event.type == KEYDOWN and event.key == self.key_mappings.get(key)
 
     def is_mouse_button_pressed(self, button):
         return pygame.mouse.get_pressed()[self.mouse_mappings[button]] == 1

@@ -51,11 +51,19 @@ class PyGame:
         self.state = state if isinstance(state, State) else State()
         self._running = True
         self.old_state = self.state
-        self.size = self.weight, self.height = 480, 480
+        self.size = self.width, self.height = 480, 480
+        self.worm_direction = (1, 0)
+        self.direction_table = {
+            "up": (0, -1),
+            "down": (0, 1),
+            "left": (-1, 0),
+            "right": (1, 0),
+        }
         self.on_init()
 
     def on_init(self):
         pygame.init()
+        pygame.key.set_repeat(0)
         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE)
         self._running = True
         pygame.display.set_caption(self.state.window_caption + str(self.state.times))
@@ -69,23 +77,16 @@ class PyGame:
         if event.type == pygame.QUIT or input_manager.is_key_pressed("quit"):
             self._running = False
 
-        if event.type == pygame.KEYDOWN:
-            pass
-        # Example of using the input manager
-        if input_manager.is_key_pressed("up"):
-            print("Up key pressed")
+        if event.type == pygame.KEYUP:
+            return
+        if actions := input_manager.get_actions():
+            logger.info(actions)
+            self.handle_actions(actions)
 
-        if input_manager.is_mouse_button_pressed("left_click"):
-            print("Left mouse button clicked")
-
-        if input_manager.is_gamepad_button_pressed("button_a"):
-            print("Gamepad button A pressed")
-
-        if input_manager.is_mouse_wheel_up():
-            print("Mousewheel up")
-
-        if input_manager.is_mouse_wheel_down():
-            print("Mousewheel down")
+    def handle_actions(self, actions):
+        for action in actions:
+            if direction_change := self.direction_table.get(action):
+                self.worm_direction = direction_change
 
     def is_running(self):
         return self._running
@@ -94,7 +95,9 @@ class PyGame:
         self.curloop += 1
         if self.curloop == 20:
             _worm = WormState(*self.state.worm)
-            _worm.x += 1
+            x, y = self.worm_direction
+            _worm.x += x
+            _worm.y += y
             self.curloop = 0
             self.state.worm = _worm.tuple()
             self.update_display = True
