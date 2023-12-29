@@ -2,11 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 import pygame
 from pygame import Surface
-from time import sleep
-
-# from pygame.locals import (
-
-# )
+from pygame.event import Event
 
 try:
     from libs import log
@@ -61,9 +57,13 @@ class PyGame:
         pygame.display.set_caption(self.state.window_caption + str(self.state.times))
         self.curloop = 0
 
-    def on_event(self, event):
+    def on_event(self, event: Event):
         # logger.info(f"Event! {event}")
-        if event.type == pygame.QUIT:
+        if (
+            event.type == pygame.QUIT
+            or event.type == pygame.KEYDOWN
+            and event.dict.get("key", None) == pygame.K_ESCAPE
+        ):
             self._running = False
 
     def is_running(self):
@@ -107,6 +107,14 @@ class PyGame:
 
     def update(self):
         self.on_execute()
-        logger.info(f"Worm: {self.state.worm}")
+        # logger.info(f"Worm: {self.state.worm}")
         # logger.warn(self.curloop)
         return self.is_running()
+
+    def run(self, state):
+        # Step function for external reloader
+        if state:
+            self.state = state
+        if not self.update():
+            self.state.quit_game = True
+        return self.state
