@@ -79,9 +79,16 @@ class PyGame:
 
         if event.type == pygame.KEYUP:
             return
+
+        if event.type == pygame.JOYHATMOTION:
+            pass
+
         if actions := input_manager.get_actions():
             logger.info(actions)
             self.handle_actions(actions)
+        else:
+            # unhandled event
+            logger.debug(event)
 
     def handle_actions(self, actions):
         for action in actions:

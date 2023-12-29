@@ -3,6 +3,10 @@ from typing import Optional
 import pygame
 from pygame.locals import *
 
+from libs.log import getLogger
+
+logger = getLogger(__file__)
+
 
 class InputManager:
     def __init__(self):
@@ -19,7 +23,7 @@ class InputManager:
 
         self.mouse_mappings = {"left_click": 0, "right_click": 2, "middle_click": 1}
 
-        self.gamepad_mappings = {
+        self.gamepad_button_mappings = {
             "button_a": 0,
             "button_b": 1,
             "button_x": 2,
@@ -27,6 +31,13 @@ class InputManager:
             "start": 9,
             "select": 8,
         }
+        self.gamepad_direction_mappings = {
+            "down": (0, -1),
+            "up": (0, 1),
+            "left": (-1, 0),
+            "right": (1, 0),
+        }
+
         self.event: Optional[pygame.event.Event] = None
 
         pygame.init()
@@ -48,8 +59,14 @@ class InputManager:
 
     def is_gamepad_button_pressed(self, button):
         if self.joystick:
-            return self.joystick.get_button(self.gamepad_mappings[button]) == 1
+            return self.joystick.get_button(self.gamepad_button_mappings[button]) == 1
         return False
+
+    def is_gamepad_hat_action(self, action):
+        if self.joystick:
+            if event := self.event:
+                if event.type == JOYHATMOTION:
+                    return event.value == self.gamepad_direction_mappings.get(action)
 
     def get_gamepad_direction(self):
         if self.joystick:
@@ -76,13 +93,18 @@ class InputManager:
     def get_actions(self):
         # sourcery skip: for-append-to-extend, inline-immediately-returned-variable, list-comprehension
         current_actions = []
+        conditions = [
+            lambda x: (x in self.key_mappings and self.is_key_pressed(x)),
+            lambda x: (x in self.gamepad_button_mappings and self.is_gamepad_button_pressed(x)),
+            lambda x: (x in self.gamepad_direction_mappings and self.is_gamepad_hat_action(x)),
+            lambda x: (x in self.mouse_mappings and self.is_mouse_button_pressed(x)),
+        ]
+
         for action in self.actions:
-            if (
-                (action in self.key_mappings and self.is_key_pressed(action))
-                or (action in self.gamepad_mappings and self.is_gamepad_button_pressed(action))
-                or (action in self.mouse_mappings and self.is_mouse_button_pressed(action))
-            ):
-                current_actions.append(action)
+            for test in conditions:
+                if test(action):
+                    current_actions.append(action)
+                    continue
         return current_actions
 
 
