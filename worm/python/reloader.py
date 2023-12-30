@@ -117,7 +117,7 @@ def example_main_loop():
     global file_modification_times
     file_modification_times = get_file_mtimes()
     # logger.info(pformat(file_modification_times))
-    game_obj = libs.worm.PyGame(None)  # an object encapsulating the stateful system
+    game_obj = libs.worm.Worm(None)  # an object encapsulating the stateful system
     if not game_obj:
         return -1
     state: libs.worm.State = game_obj.run(None)
@@ -131,8 +131,8 @@ def example_main_loop():
             time.sleep(5)
         if new_lib := reload_changed_libs(libs.__name__):
             logger.warn("Mainloop: changed library")
-            game_obj.on_cleanup()
-            game_obj = new_lib.worm.PyGame(state)
+            game_obj.terminate()
+            game_obj = new_lib.worm.Worm(state)
         # logger.warn(game_obj.mystr)
 
         if state.quit_game:
